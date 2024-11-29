@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% block content %}
+
+    <style>
+        .container {
+            display: flex;
+            justify-content: space-between;
+        }
+        .form-container0, .form-container1 {
+            border: 1px solid #ccc;
+            padding: 20px;
+        }
+        .form-container1 {
+            align-items: center;
+        }
+    </style>
+
+    <div class="container">
+        <div class="form-container0" style="width: 35%;">
+            <form id="studentForm" action="/add_student" method="POST" enctype="multipart/form-data">
+                <div class="form-group capture-section">
+                    <div>
+                        <h3>Capture Image</h3>
+                        <video id="video" autoplay></video>
+                    </div>
+                    <canvas id="canvas" width="300" height="225" style="display: none;"></canvas>
+                    <input type="hidden" id="imageData" name="imageData">
+                </div>
+                <div class="form-group">
+                    <label for="idno">IDNo</label>
+                    <input type="text" id="idno" name="idno" required>
+                </div>
+                <div class="form-group">
+                    <label for="lastname">LastName</label>
+                    <input type="text" id="lastname" name="lastname" required>
+                </div>
+                <div class="form-group">
+                    <label for="firstname">FirstName</label>
+                    <input type="text" id="firstname" name="firstname" required>
+                </div>
+                <div class="form-group">
+                    <label for="course">Course</label>
+                    <select id="course" name="course" style="width: 100%; padding: 13px;" required>
+                        <option value="">Select a course</option>
+                        <option value="BSIT">BACHELOR OF SCIENCE INFORMATION TECHNOLOGY</option>
+                        <option value="BSCS">BACHELOR OF SCIENCE IN COMPUTER SCIENCE</option>
+                        <option value="BSIS">BACHELOR OF SCIENCE IN INFORMATION SYSTEMS</option>
+                        <!-- Add more courses as needed -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="level">Level</label>
+                    <select id="level" name="level" style="width: 100%; padding: 13px;" required>
+                        <option value="">Select a level</option>
+                        <option value="1">1st Year</option>
+                        <option value="2">2nd Year</option>
+                        <option value="3">3rd Year</option>
+                        <option value="4">4th Year</option>
+                        <option value="5">5th Year</option>
+                        <option value="99">Heaven Year</option>
+                    </select>
+                </div>
+                <button type="button" id="snap" disabled>Snap</button>
+            </form>
+        </div>
+        <div class="form-container1" style="width: 55%;">
+            <h3>Student Information</h3>
+            <div style="display: flex; justify-content: space-between;">
+                <img id="capturedImage" src="{{ url_for('static', filename='defaults/default_photo.png') }}" alt="Captured Image" style="display: block; max-width: 350px; max-height: 250px; margin-left: 30px; border-radius: 15px;">
+                <img id="qrCodeImage" src="{{ url_for('static', filename='defaults/default_qrcode.png') }}" alt="QR Code" style="display: block; margin-right: 40px; width: 300px; height: 270px; border-radius: 15px;">
+            </div>
+            <table style="width: 100%; margin-top: 20px; border-collapse: collapse;">
+                <tr>
+                    <td><strong>Idno</strong></td>
+                    <td><strong>:</strong></td>
+                    <td><span id="displayIdno"></span></td>
+                </tr>
+                <tr>
+                    <td><strong>Lastname</strong></td>
+                    <td><strong>:</strong></td>
+                    <td><span id="displayLastName"></span></td>
+                </tr>
+                <tr>
+                    <td><strong>Firstname</strong></td>
+                    <td><strong>:</strong></td>
+                    <td><span id="displayFirstName"></span></td>
+                </tr>
+                <tr>
+                    <td><strong>Course</strong></td>
+                    <td><strong>:</strong></td>
+                    <td><span id="displayCourse"></span></td>
+                </tr>
+                <tr>
+                    <td><strong>Level</strong></td>
+                    <td><strong>:</strong></td>
+                    <td><span id="displayLevel"></span></td>
+                </tr>
+            </table>
+            <div style="display: flex; margin-top: 20px;">
+                <button type="button" id="saveData" style="width: 50%; margin-right: 10px;">Save</button>
+                <button type="button" id="clearData" style="width: 50%;">Cancel</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        const video = document.getElementById('video');
+        const capturedImage = document.getElementById('capturedImage');
+        const qrCodeImage = document.getElementById('qrCodeImage');
+        const form = document.getElementById('studentForm');
+        const snapButton = document.getElementById('snap');
+        const clearButton = document.getElementById('clearData');
+
+        form.addEventListener('input', () => {
+            const allFieldsFilled = [...form.querySelectorAll('input[type="text"], select')].every(input => input.value.trim() !== '');
+            snapButton.disabled = !allFieldsFilled;
+        });
+
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices.getUserMedia({ video: true }).then((stream) => {
+                video.srcObject = stream;
+                video.play();
+            });
+        }
+
+        document.getElementById("snap").addEventListener("click", () => {
+            const canvas = document.getElementById('canvas');
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, 300, 200);
+            const imageData = canvas.toDataURL('image/png');
+            document.getElementById('imageData').value = imageData;
+            capturedImage.src = imageData;
+
+            document.getElementById('displayIdno').innerText = document.getElementById('idno').value;
+            document.getElementById('displayLastName').innerText = document.getElementById('lastname').value;
+            document.getElementById('displayFirstName').innerText = document.getElementById('firstname').value;
+            document.getElementById('displayCourse').innerText = document.getElementById('course').options[document.getElementById('course').selectedIndex].text;
+            document.getElementById('displayLevel').innerText = document.getElementById('level').options[document.getElementById('level').selectedIndex].text;
+
+            const idno = document.getElementById('idno').value;
+            fetch(`/generate_qr_code?idno=${idno}`)
+                .then(response => response.json())
+                .then(data => {
+                    qrCodeImage.src = data.qr_code_url;
+                    qrCodeImage.style.width = '350px';
+                    qrCodeImage.style.height = '350px';
+                })
+                .catch(error => console.error('Error:', error));
+        });
+
+        document.getElementById('saveData').addEventListener('click', () => {
+            form.submit();
+        });
+
+        clearButton.addEventListener('click', () => {
+            form.reset();
+            snapButton.disabled = true;
+            capturedImage.src = "{{ url_for('static', filename='defaults/default_photo.png') }}";
+            qrCodeImage.src = "{{ url_for('static', filename='defaults/default_qrcode.png') }}";
+            document.getElementById('imageData').value = "";
+
+            document.getElementById('displayIdno').innerText = "";
+            document.getElementById('displayLastName').innerText = "";
+            document.getElementById('displayFirstName').innerText = "";
+            document.getElementById('displayCourse').innerText = "";
+            document.getElementById('displayLevel').innerText = "";
+        });
+    </script>
+
+{% endblock %}

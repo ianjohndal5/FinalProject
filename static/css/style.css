@@ -1,0 +1,89 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f4f8;
+    margin: 0;
+    padding: 20px;
+}
+.container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+.form-container,
+.table-container {
+    flex: 1 1 48%;
+    min-width: 280px;
+}
+.form-group {
+    margin-bottom: 15px;
+}
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+input[type="text"] {
+    width: 100%;
+    padding: 8px;
+    box-sizing: border-box;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+button {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    background: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+button:hover {
+    background: #0056b3;
+}
+.student-list {
+    margin-top: 20px;
+}
+.student-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+.student-table th, .student-table td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+.student-table th {
+    background-color: #f4f4f4;
+}
+.student-table img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 10%;
+}
+.capture-section {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+.capture-section video,
+.capture-section img {
+    width: 300px;
+    height: 225px;
+    border-radius: 8px;
+    object-fit: cover;
+}
+#capturedImage {
+    display: none;
+    margin-top: 10px;
+}
