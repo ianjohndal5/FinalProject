@@ -1,0 +1,87 @@
+
+{% block content %}
+
+<div class="container">
+    <div class="form-container">
+        <h3>Scan QR Code</h3>
+        <div id="qr-reader" style="width:300px; margin: 0 auto;"></div>
+        <div id="qr-reader-results" style="text-align: center; margin-top: 10px;"></div>
+        <div id="student-info" style="display: none; width: 50%; margin: 20px auto; padding: 20px; border: 1px solid #ccc; border-radius: 10px; background-color: #fff; text-align: left;">
+            <h3>Student Information</h3>
+            <p><strong>ID No:</strong> <span id="student-idno"></span></p>
+            <p><strong>First Name:</strong> <span id="student-firstname"></span></p>
+            <p><strong>Last Name:</strong> <span id="student-lastname"></span></p>
+            <p><strong>Course:</strong> <span id="student-course"></span></p>
+            <p><strong>Level:</strong> <span id="student-level"></span></p>
+        </div>
+    </div>
+</div>
+
+<div class="w3-center" style="text-align: center;">
+    <hr/>
+    &copy; copyright 2024, Dal, Yancha
+</div> 
+
+<!-- Include the html5-qrcode library -->
+<script src="{{ url_for('static', filename='scanner/html5-qrcode.min.js') }}"></script>
+
+<script>
+    function onScanSuccess(qrMessage) {
+        // Handle the scanned data (idno)
+        document.getElementById('qr-reader-results').innerText = `QR Code Scanned: ${qrMessage}`;
+        
+        // Send the scanned idno to the server and fetch student information
+        fetch('/record_attendance', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ idno: qrMessage })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Fetch student information based on idno
+                fetch(`/get_student?idno=${qrMessage}`)
+                    .then(response => response.json())
+                    .then(student => {
+                        if (!student.error) {
+                            // Display student information
+                            document.getElementById('student-idno').innerText = student.idno;
+                            document.getElementById('student-firstname').innerText = student.firstname;
+                            document.getElementById('student-lastname').innerText = student.lastname;
+                            document.getElementById('student-course').innerText = student.course;
+                            document.getElementById('student-level').innerText = student.level;
+
+                            document.getElementById('student-info').style.display = 'block';
+                        } else {
+                            alert(student.error);
+                        }
+                    })
+                    .catch(error => console.error('Error fetching student info:', error));
+            } else {
+                alert('Recorded');
+            }
+        })
+        .catch(error => console.error('Error recording attendance:', error));
+    }
+
+    function onScanError(errorMessage) {
+        console.error(errorMessage);
+    }
+
+    const html5QrCode = new Html5Qrcode("qr-reader");
+    html5QrCode.start(
+        { facingMode: "environment" }, // Use the back camera
+        {
+            fps: 10, // Frame rate
+            qrbox: 250 // QR code scanning box dimensions
+        },
+        onScanSuccess,
+        onScanError
+    ).catch((err) => {
+        console.error(err);
+    });
+</script>
+
+{% endblock %}

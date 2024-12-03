@@ -3,9 +3,6 @@
 
 <div class="container">
     <div class="form-container">
-        <h3>Scan QR Code</h3>
-        <div id="qr-reader" style="width:300px;"></div>
-        <div id="qr-reader-results"></div>
         {% if not attendances %}
             <p>No students have attended yet.</p>
         {% endif %}
@@ -35,50 +32,5 @@
         </table>
     </div>
 </div>
-
-<!-- Include the html5-qrcode library -->
-<script src="static/scanner/html5-qrcode.min.js"></script>
-
-<script>
-    function onScanSuccess(qrMessage) {
-        // Handle the scanned data (idno)
-        document.getElementById('qr-reader-results').innerText = `QR Code Scanned: ${qrMessage}`;
-        // Send the scanned idno to the server
-        fetch('/record_attendance', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ idno: qrMessage })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Refresh the attendance list or show a success message
-                alert('Attendance recorded successfully!');
-                location.reload();
-            } else {
-                alert('Failed to record attendance.');
-            }
-        });
-    }
-
-    function onScanError(errorMessage) {
-        console.error(errorMessage);
-    }
-
-    const html5QrCode = new Html5Qrcode("qr-reader");
-    html5QrCode.start(
-        { facingMode: "environment" }, // Use the back camera
-        {
-            fps: 10, // Frame rate
-            qrbox: 250 // QR code scanning box dimensions
-        },
-        onScanSuccess,
-        onScanError
-    ).catch((err) => {
-        console.error(err);
-    });
-</script>
 
 {% endblock %}

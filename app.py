@@ -13,12 +13,17 @@ app.secret_key = 'your_secret_key'  # Needed for flashing messages
 @app.route("/")
 def first():
     students = get_all_students("students")
-    return render_template("login.html", students=students)
+    return render_template("scanner.html", students=students)
 
 @app.route("/index")
 def index():
     students = get_all_students("students")
     return render_template("index.html", students=students, pagetitle="STUDENT")
+
+@app.route("/admin")
+def login_page():
+    students = get_all_students("students")
+    return render_template("login.html", students=students, pagetitle="LOGIN")
 
 @app.route("/list")
 def list_students():
