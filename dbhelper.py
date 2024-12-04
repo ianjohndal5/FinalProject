@@ -53,6 +53,20 @@ def getall_record(table):
     sql = f"SELECT * FROM `{table}`"
     return getprocess(sql)
 
+def add_user(table, username, password):
+    try:
+        db = connect(database)
+        cursor = db.cursor()
+        cursor.execute(f"INSERT INTO {table} (username, password) VALUES (?, ?)", (username, password))
+        db.commit()
+        cursor.close()
+        db.close()
+        return True
+    except Exception as e:
+        print(f"Error adding user: {e}")
+        return False
+
+
 
 def get_attendance(table):
     sql = f"""

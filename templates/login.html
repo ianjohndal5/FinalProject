@@ -4,21 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-</head>
-<body>  
-    <div class="login-content">
-        <form method="POST" action="/login"> 
-            <input class="login" type="text" name="username"placeholder="Username"/> <br>
-            <input class="login" type="password" name="password" 	placeholder="Password"/> <br>
-            <div style="text-align: center; margin-top: 5px;">
-                <input style="width: 40%; height: 40px;" type="submit" value="Login" />
-            </div>            
-        </form>
-    </div>
-    <div class="w3-center" style="text-align: center;">
-        <hr/>
-        &copy; copyright 2024, Dal, Yancha
-    </div> 
     <style>
         .login {
             width: 94%;
@@ -31,10 +16,61 @@
             padding: 20px;
             border: 1px solid #888;
             width: 25%;
-            height: 160px;
             margin-top: 5%;
         }
-        </style>
+        .register-form, .login-form {
+            display: none;
+        }
+    </style>
+    <script>
+        function toggleRegisterForm() {
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            const toggleText = document.getElementById('toggleText');
 
+            if (registerForm.style.display === 'none') {
+                registerForm.style.display = 'block';
+                loginForm.style.display = 'none';
+                toggleText.innerText = 'Login';
+            } else {
+                registerForm.style.display = 'none';
+                loginForm.style.display = 'block';
+                toggleText.innerText = 'SignUp';
+            }
+        }
+
+        // Show login form by default
+        window.onload = function() {
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('toggleText').innerText = 'SignUp';
+        }
+    </script>
+</head>
+<body>  
+    <div class="login-content">
+        <form id="loginForm" class="login-form" method="POST" action="/login"> 
+            <input class="login" type="text" name="username" placeholder="Username"/ required> <br>
+            <input class="login" type="password" name="password" placeholder="Password"/ required> <br>
+            <div style="text-align: center; margin-top: 5px;">
+                <input style="width: 40%; height: 40px;" type="submit" value="Login" />
+            </div>            
+        </form> 
+        <h4 style="text-align: center;">
+            <a href="javascript:void(0);" onclick="toggleRegisterForm()">
+                <span id="toggleText"></span>
+            </a>
+        </h4>
+        <form id="registerForm" class="register-form" method="POST" action="/register">
+            <input class="login" type="text" name="new_username" placeholder="Username" required/> <br>
+            <input class="login" type="password" name="new_password" placeholder="Password" required/> <br>
+            <div style="text-align: center; margin-top: 5px;">
+                <input style="width: 40%; height: 40px;" type="submit" value="Register" />
+            </div>            
+        </form>
+    </div>
+    <div class="w3-center" style="text-align: center;">
+        <hr/>
+        &copy; copyright 2024, Dal, Yancha
+    </div> 
 </body>
 </html>

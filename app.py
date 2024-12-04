@@ -1,14 +1,53 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
-from dbhelper import savestudent, get_all_students, student_exists, check_login, get_student_by_id, edit_student_in_db, delete_student_from_db, get_attendance, check_attendance_exists
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, Response
+from dbhelper import savestudent, get_all_students, student_exists, check_login, get_student_by_id, edit_student_in_db, delete_student_from_db, get_attendance, check_attendance_exists, add_user
 from sqlite3 import connect
 import base64
 import os
 import qrcode
+import numpy as np
+import cv2
+import pyzbar.pyzbar as pyzbar
+from pyzbar.pyzbar import decode
 
 database = "student.db"  # Define your database name
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
 app.secret_key = 'your_secret_key'  # Needed for flashing messages
+
+@app.route('/scan_qr', methods=['POST'])
+def scan_qr():
+    image_data = request.json.get('image')
+
+    # Decode the base64 image
+    image_data = image_data.split(',')[1]
+    image = np.frombuffer(base64.b64decode(image_data), dtype=np.uint8)
+    image = cv2.imdecode(image, cv2.IMREAD_COLOR)
+
+    # Decode QR code
+    decoded_objects = decode(image)
+    if decoded_objects:
+        qr_message = decoded_objects[0].data.decode('utf-8')
+        return jsonify(success=True, qrMessage=qr_message)
+    else:
+        return jsonify(success=False, errorMessage='QR code not found')
+
+
+def generate_frames():
+    camera = cv2.VideoCapture(0)
+    while True:
+        success, frame = camera.read()
+        if not success:
+            break
+        else:
+            decoded_objects = pyzbar.decode(frame)
+            for obj in decoded_objects:
+                cv2.putText(frame, str(obj.data.decode("utf-8")), (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 255, 0), 3)
+                yield (b'--frame\r\n'
+                       b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+
+@app.route("/video_feed")
+def video_feed():
+    return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 @app.route("/")
 def first():
@@ -54,6 +93,20 @@ def login():
     else:
         flash("Invalid Account, please try again", "error")
         return redirect(url_for("login"))
+    
+@app.route("/register", methods=["POST"])
+def register():
+    new_username = request.form["new_username"]
+    new_password = request.form["new_password"]
+
+    success = add_user("users", new_username, new_password)
+    if success:
+        flash("Registration successful. Please log in.", "success")
+        return redirect(url_for("login_page"))
+    else:
+        flash("Registration failed. Please try again.", "error")
+        return redirect(url_for("login_page"))
+
 
 @app.route("/edit_student", methods=["POST"])
 def edit_student():
